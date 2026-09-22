@@ -1,0 +1,10 @@
+{
+  "description": "Enables users to browse, filter, and book professional services with real-time availability, secure login, and clear reservation confirmation for seamless scheduling.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
