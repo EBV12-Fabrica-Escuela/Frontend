@@ -110,6 +110,8 @@ export default function App() {
   }
 
   const handleAuthenticate = async (mode: 'login' | 'register', payload: { name: string; email: string; password: string }) => {
+    clearAuth()
+    setAuthState(null)
     if (mode === 'register') {
       await api.register({ ...payload, role: 'CLIENT', termsAccepted: true })
     }

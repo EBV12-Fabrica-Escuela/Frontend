@@ -89,11 +89,15 @@ export function clearAuth() {
   sessionStorage.removeItem(TOKEN_KEY)
 }
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+async function request<T>(
+  path: string,
+  options: RequestInit = {},
+  config: { includeAuth?: boolean } = {},
+): Promise<T> {
   const auth = getAuth()
   const headers = new Headers(options.headers)
   headers.set('Content-Type', 'application/json')
-  if (auth?.token) headers.set('Authorization', `Bearer ${auth.token}`)
+  if (config.includeAuth !== false && auth?.token) headers.set('Authorization', `Bearer ${auth.token}`)
 
   const response = await fetch(`${API_URL}${path}`, { ...options, headers })
   const body = (await response.json().catch(() => ({}))) as ApiResponse<T> & ApiError
@@ -107,9 +111,9 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
 export const api = {
   register: (payload: RegisterRequest) =>
-    request<AuthUser>('/api/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
+    request<AuthUser>('/api/auth/register', { method: 'POST', body: JSON.stringify(payload) }, { includeAuth: false }),
   login: (payload: LoginRequest) =>
-    request<AuthUser>('/api/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
+    request<AuthUser>('/api/auth/login', { method: 'POST', body: JSON.stringify(payload) }, { includeAuth: false }),
   logout: () => request<void>('/api/auth/logout', { method: 'POST' }),
   services: (params: { page?: number; size?: number; query?: string; categoria?: string; precioMin?: number; precioMax?: number } = {}) => {
     const query = new URLSearchParams()
