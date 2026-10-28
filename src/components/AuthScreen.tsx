@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Service } from '../App'
 
 interface Props {
-  service: Service
+  service: Service | null
   onAuthenticate: (mode: AuthMode, payload: { name: string; email: string; password: string }) => Promise<void>
   onBack: () => void
 }
@@ -79,8 +79,7 @@ export default function AuthScreen({ service, onAuthenticate, onBack }: Props) {
             Tu selección quedará guardada mientras te autentificas.
           </p>
 
-          {/* Service mini card */}
-          <div
+          {service && <div
             className="rounded-xl overflow-hidden border"
             style={{ borderColor: '#e5e7eb' }}
             aria-label="Servicio seleccionado"
@@ -104,7 +103,7 @@ export default function AuthScreen({ service, onAuthenticate, onBack }: Props) {
                 {service.price}
               </p>
             </div>
-          </div>
+          </div>}
 
           <button
             onClick={onBack}
@@ -376,7 +375,7 @@ export default function AuthScreen({ service, onAuthenticate, onBack }: Props) {
           >
             <span aria-hidden="true">💡</span>
             <span>
-              <strong className="text-gray-700">Modo prototipo:</strong> Ingresa cualquier correo y contraseña (mín. 6 caracteres) para continuar.
+              <strong className="text-gray-700">Cuenta requerida:</strong> usa una cuenta registrada en el backend o selecciona “Registrarme” para crear una cuenta de cliente.
             </span>
           </div>
         </div>

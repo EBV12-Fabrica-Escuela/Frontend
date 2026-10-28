@@ -166,13 +166,13 @@ export default function App() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#f9fafb' }}>
-      <Header isLoggedIn={!!auth?.token} userName={auth?.name} onLogoClick={handleBackToCatalog} onMisReservas={() => {}} onLogout={handleLogout} />
+      <Header isLoggedIn={!!auth?.token} userName={auth?.name} onLogoClick={handleBackToCatalog} onLogin={() => setScreen('auth')} onMisReservas={() => {}} onLogout={handleLogout} />
       {screen === 'catalog' && <CatalogScreen services={services} loading={catalogLoading} error={catalogError} onSearch={loadServices} onSelectService={handleSelectService} />}
       {screen === 'availability' && selectedService && (
         <AvailabilityScreen service={selectedService} selectedDate={selectedDate} selectedTime={selectedTime} slots={slots} loading={availabilityLoading} error={availabilityError}
           onDateChange={selectDate} onTimeChange={(time, slot) => { setSelectedTime(time); setSelectedSlot(slot) }} onContinue={() => setScreen(auth?.token ? 'summary' : 'auth')} onBack={handleBackToCatalog} />
       )}
-      {screen === 'auth' && selectedService && <AuthScreen service={selectedService} onAuthenticate={handleAuthenticate} onBack={() => setScreen('availability')} />}
+      {screen === 'auth' && <AuthScreen service={selectedService} onAuthenticate={handleAuthenticate} onBack={() => setScreen(selectedService ? 'availability' : 'catalog')} />}
       {screen === 'summary' && selectedService && selectedDate && selectedTime && <SummaryScreen service={selectedService} date={selectedDate} time={selectedTime} observations={observations} error={bookingError} onObservationsChange={setObservations} onConfirm={handleConfirm} onBack={() => setScreen('availability')} />}
       {screen === 'confirmed' && selectedService && selectedDate && selectedTime && <ConfirmedScreen service={selectedService} date={selectedDate} time={selectedTime} bookingCode="Reserva confirmada" onViewReservations={() => {}} onBackToCatalog={handleBackToCatalog} />}
       {screen === 'slot-taken' && <SlotTakenScreen onChooseAnotherTime={() => setScreen('availability')} />}

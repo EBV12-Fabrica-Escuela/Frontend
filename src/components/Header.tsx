@@ -2,11 +2,12 @@ interface HeaderProps {
   isLoggedIn: boolean
   userName?: string
   onLogoClick: () => void
+  onLogin: () => void
   onMisReservas: () => void
   onLogout: () => void
 }
 
-export default function Header({ isLoggedIn, userName, onLogoClick, onMisReservas, onLogout }: HeaderProps) {
+export default function Header({ isLoggedIn, userName, onLogoClick, onLogin, onMisReservas, onLogout }: HeaderProps) {
   return (
     <header
       className="bg-white border-b sticky top-0 z-40"
@@ -105,6 +106,7 @@ export default function Header({ isLoggedIn, userName, onLogoClick, onMisReserva
               </div>
             ) : (
               <button
+                onClick={onLogin}
                 className="text-sm font-semibold px-4 py-2 rounded-lg border transition-colors"
                 style={{ color: '#2563eb', borderColor: '#bfdbfe' }}
                 onMouseEnter={e => {
