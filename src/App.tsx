@@ -49,6 +49,7 @@ export default function App() {
   const [observations, setObservations] = useState('')
   const [auth, setAuthState] = useState(getAuth())
   const [bookingError, setBookingError] = useState('')
+  const [navigationMessage, setNavigationMessage] = useState('')
   const availabilityRequest = useRef(0)
 
   const loadServices = async (params: Parameters<typeof api.services>[0] = {}) => {
@@ -154,6 +155,7 @@ export default function App() {
   }
 
   const handleBackToCatalog = () => {
+    setNavigationMessage('')
     setScreen('catalog')
     setSelectedService(null)
     setSelectedDate(null)
@@ -166,7 +168,26 @@ export default function App() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#f9fafb' }}>
-      <Header isLoggedIn={!!auth?.token} userName={auth?.name} onLogoClick={handleBackToCatalog} onLogin={() => setScreen('auth')} onMisReservas={() => {}} onLogout={handleLogout} />
+      <Header
+        isLoggedIn={!!auth?.token}
+        userName={auth?.name}
+        onLogoClick={handleBackToCatalog}
+        onLogin={() => setScreen('auth')}
+        onMisReservas={() => {
+          if (!auth?.token) {
+            setScreen('auth')
+            return
+          }
+          setNavigationMessage('La API actual no incluye una ruta para consultar las reservas del cliente.')
+        }}
+        onLogout={handleLogout}
+      />
+      {navigationMessage && (
+        <div className="mx-auto mt-4 flex max-w-7xl items-center justify-between rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800" role="status">
+          <span>{navigationMessage}</span>
+          <button onClick={() => setNavigationMessage('')} className="ml-4 font-semibold" aria-label="Cerrar mensaje">Cerrar</button>
+        </div>
+      )}
       {screen === 'catalog' && <CatalogScreen services={services} loading={catalogLoading} error={catalogError} onSearch={loadServices} onSelectService={handleSelectService} />}
       {screen === 'availability' && selectedService && (
         <AvailabilityScreen service={selectedService} selectedDate={selectedDate} selectedTime={selectedTime} slots={slots} loading={availabilityLoading} error={availabilityError}

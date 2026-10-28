@@ -43,8 +43,8 @@ export default function Header({ isLoggedIn, userName, onLogoClick, onLogin, onM
 
           {/* Nav */}
           <nav className="hidden md:flex items-center gap-1" aria-label="Navegación principal">
-            <a
-              href="#"
+            <button
+              onClick={onLogoClick}
               className="px-3 py-2 text-sm font-medium rounded-lg transition-colors"
               style={{ color: '#374151' }}
               onMouseEnter={e => {
@@ -57,7 +57,7 @@ export default function Header({ isLoggedIn, userName, onLogoClick, onLogin, onM
               }}
             >
               Servicios
-            </a>
+            </button>
             <button
               onClick={onMisReservas}
               className="px-3 py-2 text-sm font-medium rounded-lg transition-colors"
@@ -73,21 +73,6 @@ export default function Header({ isLoggedIn, userName, onLogoClick, onLogin, onM
             >
               Mis reservas
             </button>
-            <a
-              href="#"
-              className="px-3 py-2 text-sm font-medium rounded-lg transition-colors"
-              style={{ color: '#374151' }}
-              onMouseEnter={e => {
-                ;(e.target as HTMLElement).style.color = '#2563eb'
-                ;(e.target as HTMLElement).style.backgroundColor = '#eff6ff'
-              }}
-              onMouseLeave={e => {
-                ;(e.target as HTMLElement).style.color = '#374151'
-                ;(e.target as HTMLElement).style.backgroundColor = 'transparent'
-              }}
-            >
-              Ayuda
-            </a>
           </nav>
 
           {/* User area */}

@@ -295,13 +295,9 @@ export default function AuthScreen({ service, onAuthenticate, onBack }: Props) {
                   Contraseña <span aria-hidden="true" style={{ color: '#ef4444' }}>*</span>
                 </label>
                 {mode === 'login' && (
-                  <a
-                    href="#"
-                    className="text-xs font-medium transition-colors"
-                    style={{ color: '#2563eb' }}
-                  >
+                  <span className="text-xs font-medium text-gray-400">
                     ¿Olvidaste tu contraseña?
-                  </a>
+                  </span>
                 )}
               </div>
               <input
