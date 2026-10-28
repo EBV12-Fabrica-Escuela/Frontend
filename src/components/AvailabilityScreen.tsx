@@ -1,12 +1,16 @@
 import { useState } from 'react'
 import { Service } from '../App'
+import { AvailabilitySlot } from '../services/api'
 
 interface Props {
   service: Service
   selectedDate: Date | null
   selectedTime: string | null
   onDateChange: (date: Date | null) => void
-  onTimeChange: (time: string | null) => void
+  slots: AvailabilitySlot[]
+  loading: boolean
+  error: string
+  onTimeChange: (time: string | null, slot: AvailabilitySlot | null) => void
   onContinue: () => void
   onBack: () => void
 }
@@ -16,13 +20,6 @@ const MONTH_NAMES = [
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
 ]
 const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
-const TIME_SLOTS = ['08:00 AM', '10:00 AM', '02:00 PM', '04:00 PM']
-
-// Days fully booked (red) — day number only
-const FULL_DAYS = [10, 14, 18, 22, 25]
-// Non-working days / holidays (gray)
-const HOLIDAY_DAYS = [19]
-
 type DayStatus = 'past' | 'today' | 'available' | 'full' | 'holiday' | 'selected'
 
 function getDayStatus(year: number, month: number, day: number, selectedDate: Date | null): DayStatus {
@@ -37,12 +34,6 @@ function getDayStatus(year: number, month: number, day: number, selectedDate: Da
   }
 
   if (date < now) return 'past'
-
-  // Holiday check (apply for any month for demo purposes)
-  if (HOLIDAY_DAYS.includes(day)) return 'holiday'
-
-  // Full/booked check
-  if (FULL_DAYS.includes(day)) return 'full'
 
   return 'available'
 }
@@ -90,6 +81,9 @@ export default function AvailabilityScreen({
   service,
   selectedDate,
   selectedTime,
+  slots,
+  loading,
+  error,
   onDateChange,
   onTimeChange,
   onContinue,
@@ -125,10 +119,10 @@ export default function AvailabilityScreen({
     const newDate = new Date(calYear, calMonth, day)
     if (status === 'selected') {
       onDateChange(null)
-      onTimeChange(null)
+      onTimeChange(null, null)
     } else {
       onDateChange(newDate)
-      onTimeChange(null)
+      onTimeChange(null, null)
     }
   }
 
@@ -467,12 +461,15 @@ export default function AvailabilityScreen({
                 role="group"
                 aria-label="Seleccionar horario"
               >
-                {TIME_SLOTS.map(slot => {
-                  const isSelected = selectedTime === slot
+                {loading && <p className="col-span-full text-sm text-gray-500">Consultando disponibilidad...</p>}
+                {error && <p className="col-span-full text-sm text-red-600" role="alert">{error}</p>}
+                {!loading && !error && slots.filter(slot => slot.disponible).map(slot => {
+                  const label = `${slot.horaInicio.slice(0, 5)} - ${slot.horaFin.slice(0, 5)}`
+                  const isSelected = selectedTime === label
                   return (
                     <button
-                      key={slot}
-                      onClick={() => onTimeChange(isSelected ? null : slot)}
+                      key={slot.id}
+                      onClick={() => onTimeChange(isSelected ? null : label, isSelected ? null : slot)}
                       className="py-3 px-4 rounded-xl border-2 text-sm font-semibold transition-all flex flex-col items-center gap-1"
                       style={{
                         backgroundColor: isSelected ? '#2563eb' : 'white',
@@ -480,7 +477,7 @@ export default function AvailabilityScreen({
                         color: isSelected ? 'white' : '#374151',
                       }}
                       aria-pressed={isSelected}
-                      aria-label={`Horario ${slot}${isSelected ? ' — Seleccionado' : ''}`}
+                      aria-label={`Horario ${label}${isSelected ? ' — Seleccionado' : ''}`}
                       onMouseEnter={e => {
                         if (!isSelected) {
                           ;(e.currentTarget as HTMLElement).style.borderColor = '#2563eb'
@@ -496,13 +493,16 @@ export default function AvailabilityScreen({
                         }
                       }}
                     >
-                      <span>{slot}</span>
+                      <span>{label}</span>
                       {isSelected && (
                         <span className="text-xs font-medium opacity-80">Seleccionado</span>
                       )}
                     </button>
                   )
                 })}
+                {!loading && !error && slots.filter(slot => slot.disponible).length === 0 && (
+                  <p className="col-span-full text-sm text-gray-500">No hay horarios disponibles para esta fecha.</p>
+                )}
               </div>
             </div>
           )}

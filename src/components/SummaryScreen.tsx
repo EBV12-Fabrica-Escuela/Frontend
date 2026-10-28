@@ -6,8 +6,9 @@ interface Props {
   date: Date
   time: string
   observations: string
+  error: string
   onObservationsChange: (val: string) => void
-  onConfirm: (simulateSlotTaken: boolean) => void
+  onConfirm: () => Promise<void>
   onBack: () => void
 }
 
@@ -136,6 +137,7 @@ export default function SummaryScreen({
   date,
   time,
   observations,
+  error,
   onObservationsChange,
   onConfirm,
   onBack,
@@ -143,7 +145,6 @@ export default function SummaryScreen({
   const [policiesAccepted, setPoliciesAccepted] = useState(false)
   const [showPolicies, setShowPolicies] = useState(false)
   const [isConfirming, setIsConfirming] = useState(false)
-  const [simulateSlotTaken, setSimulateSlotTaken] = useState(false)
 
   const formattedDate = date.toLocaleDateString('es-CO', {
     weekday: 'long',
@@ -155,10 +156,9 @@ export default function SummaryScreen({
   const handleConfirm = () => {
     if (!policiesAccepted || isConfirming) return
     setIsConfirming(true)
-    setTimeout(() => {
+    void onConfirm().finally(() => {
       setIsConfirming(false)
-      onConfirm(simulateSlotTaken)
-    }, 1500)
+    })
   }
 
   return (
@@ -223,6 +223,7 @@ export default function SummaryScreen({
         <p className="text-gray-500 mb-8">
           Revisa los detalles antes de confirmar. Una vez confirmada recibirás un comprobante.
         </p>
+        {error && <p className="mb-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{error}</p>}
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left: Details */}
@@ -439,23 +440,6 @@ export default function SummaryScreen({
               Modificar fecha u horario
             </button>
 
-            {/* Demo: simulate slot taken */}
-            <div
-              className="p-3 rounded-xl text-xs"
-              style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a' }}
-            >
-              <p className="font-semibold text-amber-700 mb-1">🎮 Demo: Simular turno ocupado</p>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={simulateSlotTaken}
-                  onChange={e => setSimulateSlotTaken(e.target.checked)}
-                  className="w-3 h-3"
-                  style={{ accentColor: '#d97706' }}
-                />
-                <span className="text-amber-700">Activar este escenario al confirmar</span>
-              </label>
-            </div>
           </div>
         </div>
       </main>

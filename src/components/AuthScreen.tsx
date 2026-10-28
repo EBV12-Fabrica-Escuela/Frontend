@@ -3,13 +3,13 @@ import { Service } from '../App'
 
 interface Props {
   service: Service
-  onLogin: () => void
+  onAuthenticate: (mode: AuthMode, payload: { name: string; email: string; password: string }) => Promise<void>
   onBack: () => void
 }
 
 type AuthMode = 'login' | 'register'
 
-export default function AuthScreen({ service, onLogin, onBack }: Props) {
+export default function AuthScreen({ service, onAuthenticate, onBack }: Props) {
   const [mode, setMode] = useState<AuthMode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -28,12 +28,11 @@ export default function AuthScreen({ service, onLogin, onBack }: Props) {
       errs.password = 'La contraseña debe tener al menos 6 caracteres'
     if (mode === 'register') {
       if (!name) errs.name = 'El nombre es obligatorio'
-      if (!phone) errs.phone = 'El número de celular es obligatorio'
     }
     return errs
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const errs = validate()
     if (Object.keys(errs).length > 0) {
@@ -42,10 +41,13 @@ export default function AuthScreen({ service, onLogin, onBack }: Props) {
     }
     setErrors({})
     setIsLoading(true)
-    setTimeout(() => {
+    try {
+      await onAuthenticate(mode, { name, email, password })
       setIsLoading(false)
-      onLogin()
-    }, 1200)
+    } catch (error) {
+      setIsLoading(false)
+      setErrors({ form: error instanceof Error ? error.message : 'No fue posible autenticarte.' })
+    }
   }
 
   return (
@@ -172,6 +174,7 @@ export default function AuthScreen({ service, onLogin, onBack }: Props) {
               ? 'Ingresa tus credenciales para continuar con la reserva'
               : 'Regístrate para completar tu primera reserva'}
           </p>
+          {errors.form && <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">{errors.form}</p>}
 
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
             {/* Name (register only) */}
@@ -367,7 +370,6 @@ export default function AuthScreen({ service, onLogin, onBack }: Props) {
             </button>
           </form>
 
-          {/* Demo note */}
           <div
             className="mt-5 p-3 rounded-xl text-xs text-gray-500 flex items-start gap-2"
             style={{ backgroundColor: '#fafafa', border: '1px solid #f3f4f6' }}

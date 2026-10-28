@@ -1,10 +1,12 @@
 interface HeaderProps {
   isLoggedIn: boolean
+  userName?: string
   onLogoClick: () => void
   onMisReservas: () => void
+  onLogout: () => void
 }
 
-export default function Header({ isLoggedIn, onLogoClick, onMisReservas }: HeaderProps) {
+export default function Header({ isLoggedIn, userName, onLogoClick, onMisReservas, onLogout }: HeaderProps) {
   return (
     <header
       className="bg-white border-b sticky top-0 z-40"
@@ -98,7 +100,8 @@ export default function Header({ isLoggedIn, onLogoClick, onMisReservas }: Heade
                 >
                   JD
                 </div>
-                <span className="text-sm font-medium text-gray-700 hidden sm:block">Juan Díaz</span>
+                <span className="text-sm font-medium text-gray-700 hidden sm:block">{userName || 'Usuario'}</span>
+                <button onClick={onLogout} className="text-xs text-gray-500 hover:text-blue-600">Cerrar sesión</button>
               </div>
             ) : (
               <button
