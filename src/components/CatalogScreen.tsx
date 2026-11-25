@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Service } from '../App'
+import { useState } from 'react'
+import { Service, SERVICES } from '../App'
+import limpiezaImg from '@/imports/Captura_de_pantalla_2026-09-06_200346.png'
 
 const CATEGORIES = ['Todas', 'Limpieza', 'Tecnología', 'Mantenimiento', 'Diseño']
 
@@ -13,11 +14,8 @@ const CATEGORY_ICONS: Record<string, string> = {
 }
 
 interface Props {
-  services: Service[]
-  loading: boolean
-  error: string
-  onSearch: (params: { query?: string; categoria?: string; precioMin?: number; precioMax?: number }) => Promise<void>
   onSelectService: (service: Service) => void
+  services?: Service[]
 }
 
 function SkeletonCard() {
@@ -58,9 +56,12 @@ function ServiceCard({
     >
       {/* Image */}
       <div className="relative overflow-hidden" style={{ height: '176px', backgroundColor: '#dbeafe' }}>
-        {service.image ? <img src={service.image} alt={`Imagen de ${service.name}`} className="w-full h-full object-cover" loading="lazy" /> : (
-        <div className="w-full h-full flex items-center justify-center text-5xl" aria-hidden="true">{CATEGORY_ICONS[service.category] || '🛠️'}</div>
-        )}
+        <img
+          src={service.id === '1' ? limpiezaImg : service.image}
+          alt={`Imagen de ${service.name}`}
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
         <div
           className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-semibold"
           style={{ backgroundColor: 'rgba(255,255,255,0.92)', color: '#374151', backdropFilter: 'blur(4px)' }}
@@ -131,7 +132,10 @@ function ServiceCard({
   )
 }
 
-export default function CatalogScreen({ services, loading, error, onSearch, onSelectService }: Props) {
+export default function CatalogScreen({
+  onSelectService,
+  services = SERVICES,
+}: Props) {
   const [view, setView] = useState<CatalogView>('initial')
   const [displayedServices, setDisplayedServices] = useState<Service[]>(services)
 
@@ -141,14 +145,27 @@ export default function CatalogScreen({ services, loading, error, onSearch, onSe
   const [maxPriceInput, setMaxPriceInput] = useState(300000)
   const [hasActiveFilters, setHasActiveFilters] = useState(false)
 
-  useEffect(() => {
-    setDisplayedServices(services)
-    setView(loading ? 'loading' : services.length ? 'initial' : 'no-results')
-  }, [services, loading])
-
-  const runFilter = async (search: string, category: string, minP: number, maxP: number) => {
+  const runFilter = (
+    search: string,
+    category: string,
+    minP: number,
+    maxP: number,
+  ) => {
     setView('loading')
-    await onSearch({ query: search || undefined, categoria: category === 'Todas' ? undefined : category, precioMin: minP || undefined, precioMax: maxP })
+    setTimeout(() => {
+      const results = services.filter(s => {
+        const matchSearch =
+          search === '' ||
+          s.name.toLowerCase().includes(search.toLowerCase()) ||
+          s.provider.toLowerCase().includes(search.toLowerCase()) ||
+          s.category.toLowerCase().includes(search.toLowerCase())
+        const matchCategory = category === 'Todas' || s.category === category
+        const matchPrice = s.priceNum >= minP && s.priceNum <= maxP
+        return matchSearch && matchCategory && matchPrice
+      })
+      setDisplayedServices(results)
+      setView(results.length === 0 ? 'no-results' : 'results')
+    }, 800)
   }
 
   const applyFilters = () => {
@@ -159,7 +176,8 @@ export default function CatalogScreen({ services, loading, error, onSearch, onSe
       maxPriceInput === 300000
     setHasActiveFilters(!isDefault)
     if (isDefault) {
-      void onSearch()
+      setDisplayedServices(services)
+      setView('initial')
       return
     }
     runFilter(searchInput, categoryInput, minPriceInput, maxPriceInput)
@@ -171,7 +189,8 @@ export default function CatalogScreen({ services, loading, error, onSearch, onSe
     setMinPriceInput(0)
     setMaxPriceInput(300000)
     setHasActiveFilters(false)
-    void onSearch()
+    setDisplayedServices(services)
+    setView('initial')
   }
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -179,7 +198,7 @@ export default function CatalogScreen({ services, loading, error, onSearch, onSe
     applyFilters()
   }
 
-  const servicesShown = displayedServices
+  const servicesShown = view === 'initial' ? services : displayedServices
   const resultCount = servicesShown.length
 
   return (
@@ -352,7 +371,7 @@ export default function CatalogScreen({ services, loading, error, onSearch, onSe
         )}
 
         {/* Loading skeletons */}
-        {(view === 'loading' || loading) && (
+        {view === 'loading' && (
           <div
             className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
             aria-live="polite"
@@ -364,7 +383,6 @@ export default function CatalogScreen({ services, loading, error, onSearch, onSe
             ))}
           </div>
         )}
-        {error && <p className="py-4 text-center text-red-600" role="alert">{error}</p>}
 
         {/* No results */}
         {view === 'no-results' && (
